@@ -48,5 +48,6 @@
                 </x-jet-danger-button>
             </x-slot>
         </x-jet-dialog-modal>
+        
     </x-slot>
 </x-jet-action-section>
