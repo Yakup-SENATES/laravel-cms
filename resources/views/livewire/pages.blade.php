@@ -36,7 +36,12 @@
                             
                         @foreach ($data as $item)
                                 <tr>
-                                    <td class="px-6 py-4 text-sm whitespace-nowrap">{{$item->title}}</td>
+                                    <td class="px-6 py-4 text-sm whitespace-nowrap">{{$item->title}}
+                                    {!!$item->is_default_home ? '<span class="text-green-400 text-xs font-bold">[Default Home Page]</span>':'' !!}
+                                    {!!$item->is_default_not_found ? '<span class="text-red-600 text-xs font-bold">[Default Not Found Page]</span>':'' !!}
+                                    
+                                    
+                                    </td>
                                     <td class="px-6 py-4 text-sm whitespace-nowrap">
                                         <a href="{{URL::to('/'.$item->slug)}}" class="text-indigo-600 hover:text-indigo-900" 
                                             target="blank">                                    
@@ -96,6 +101,19 @@
                     </div>
                     @error('slug') <span class="error"> {{ $message }}</span>                    
                     @enderror
+                </div>
+
+                <div class="mt-4">
+                  <label>
+                      <input type="checkbox" wire:model="isSetToDefaultHomePage" value="{{$isSetToDefaultHomePage}}">
+                      <span class="ml-2 text-sm text-gray-600">Set As the defaut home page</span>
+                  </label>
+                </div>
+                <div class="mt-4">
+                  <label for="">
+                      <input type="checkbox" wire:model="isSetToDefaultNotFoundPage" value="{{$isSetToDefaultNotFoundPage}}">
+                      <span class="ml-2 text-sm text-red-600">Set As the defaut 404 page</span>
+                  </label>
                 </div>
 
                 <div class="mt-4">

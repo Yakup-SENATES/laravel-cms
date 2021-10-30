@@ -6,6 +6,7 @@ use App\Models\Page;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class Pages extends Component
 {
@@ -13,6 +14,8 @@ class Pages extends Component
     public $slug, $title, $content, $modelId;
     public  $modelFormVisible = false;
     public  $modelConfirmDeleteVisible = false;
+    public  $isSetToDefaultHomePage;
+    public  $isSetToDefaultNotFoundPage;
 
 
     /**
@@ -50,8 +53,20 @@ class Pages extends Component
      */
     public function updatedTitle($value)
     {
-        $this->generateSlug($value);
+        $this->slug = Str::slug($value);
     }
+
+    public function updatedIsSetToDefaultHomePage()
+    {
+        $this->isSetToDefaultNotFoundPage = null;
+    }
+
+
+    public function updatedIsSetToDefaultNotFoundPage()
+    {
+        $this->isSetToDefaultHomePage = null;
+    }
+
 
     /**
      * create Page 
@@ -61,9 +76,11 @@ class Pages extends Component
     public function create()
     {
         $this->validate();
+        $this->unAssignDefaultHomePage();
+        $this->unAssignDefaultNotFoundPage();
         Page::create($this->modelData());
         $this->modelFormVisible = false;
-        $this->resetVars();
+        $this->reset();
     }
 
     /**
@@ -85,6 +102,9 @@ class Pages extends Component
     public function update()
     {
         $this->validate();
+        $this->unAssignDefaultHomePage();
+        $this->unAssignDefaultNotFoundPage();
+
         Page::find($this->modelId)->update($this->modelData());
         $this->modelFormVisible = false;
         //$this->resetValidation();
@@ -103,33 +123,67 @@ class Pages extends Component
     }
 
 
+    ///**
+    // * Resets all variables 
+    // * to null
+    // *
+    // * @return void
+    // */
+    //public function resetVars()
+    //{
+    //    $this->modelId = null;
+    //    $this->title = null;
+    //    $this->slug = null;
+    //    $this->content = null;
+    //    $this->isSetToDefaultHomePage = null;
+    //    $this->isSetToDefaultNotFoundPage = null;
+    //}
+
+    ///**
+    // * Generates a url slug 
+    // * base on the title.
+    // *
+    // * @param  mixed $value
+    // * @return void
+    // */
+    //private function generateSlug($value)
+    //{
+    //    $process1 =  str_replace(' ', '-', $value);
+    //    $process2 = strtolower($process1);
+    //    $this->slug = $process2;
+    //}
+
+
     /**
-     * Resets all variables 
-     * to null
+     * Un Assigns the default homepage in the database table 
      *
      * @return void
      */
-    public function resetVars()
+    private function unAssignDefaultHomePage()
     {
-        $this->modelId = null;
-        $this->title = null;
-        $this->slug = null;
-        $this->content = null;
+
+        if ($this->isSetToDefaultHomePage != null) {
+            Page::where('is_default_home', true)->update([
+                'is_default_home' => false,
+            ]);
+        }
     }
 
     /**
-     * Generates a url slug 
-     * base on the title.
+     *  Un Assigns the default not found page  in the database table
      *
-     * @param  mixed $value
      * @return void
      */
-    private function generateSlug($value)
+    private function unAssignDefaultNotFoundPage()
     {
-        $process1 =  str_replace(' ', '-', $value);
-        $process2 = strtolower($process1);
-        $this->slug = $process2;
+
+        if ($this->isSetToDefaultNotFoundPage != null) {
+            Page::where('is_default_not_found', true)->update([
+                'is_default_not_found' => false,
+            ]);
+        }
     }
+
 
     /**
      * Show the form modal of the create function
@@ -142,7 +196,7 @@ class Pages extends Component
     {
         $this->resetValidation();
         //update den sonra veriler temizlenmeli
-        $this->resetVars();
+        $this->reset();
         $this->modelFormVisible = true;
     }
 
@@ -157,7 +211,7 @@ class Pages extends Component
     public function updateShowModel($id)
     {
         $this->resetValidation();
-        $this->resetVars();
+        $this->reset();
         $this->modelId  = $id;
         $this->modelFormVisible = true;
         $this->loadModel();
@@ -191,6 +245,8 @@ class Pages extends Component
         $this->title = $data->title;
         $this->slug = $data->slug;
         $this->content = $data->content;
+        $this->isSetToDefaultHomePage = !$data->is_default_home ? null : true;
+        $this->isSetToDefaultNotFoundPage = !$data->is_default_not_found ? null : true;
     }
 
 
@@ -207,6 +263,8 @@ class Pages extends Component
             'title' => $this->title,
             'slug' => $this->slug,
             'content' => $this->content,
+            'is_default_home' => $this->isSetToDefaultHomePage,
+            'is_default_not_found' => $this->isSetToDefaultNotFoundPage,
         ];
     }
 
