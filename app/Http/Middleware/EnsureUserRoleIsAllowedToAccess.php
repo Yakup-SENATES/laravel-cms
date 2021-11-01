@@ -29,10 +29,10 @@ class EnsureUserRoleIsAllowedToAccess
             if (in_array($currentRouteName, $this->userAccessRole()[$userRole])) {
                 return $next($request);
             } else {
-                abort(403, 'You are not allowed to access this page');
+                abort(403, 'Unauthorized Action.');
             }
         } catch (\Throwable $th) {
-            abort(403, 'You are not allowed to access this page');
+            abort(403, 'Unauthorized Action.');
         }
     }
     /**
@@ -50,6 +50,8 @@ class EnsureUserRoleIsAllowedToAccess
             'admin' => [
                 'pages',
                 'navigation-menus',
+                'users',
+                'user-permissions'
             ],
         ];
     }

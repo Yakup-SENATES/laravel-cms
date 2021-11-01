@@ -15,10 +15,19 @@
                     <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-jet-nav-link>
-                </div>
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                {{--</div>
+                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">--}}
                     <x-jet-nav-link href="{{ route('pages') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Pages') }}
+                    </x-jet-nav-link>
+                    <x-jet-nav-link href="{{ route('navigation-menus') }}" :active="request()->routeIs('navigation-menus')">
+                        {{ __('Navigation Menus') }}
+                    </x-jet-nav-link>
+                    <x-jet-nav-link href="{{ route('users') }}" :active="request()->routeIs('users')">
+                        {{ __('Users') }}
+                    </x-jet-nav-link>
+                    <x-jet-nav-link href="{{ route('user-permissions') }}" :active="request()->routeIs('user-permissions')">
+                        {{ __('User Permissions') }}
                     </x-jet-nav-link>
                 </div>
             </div>
