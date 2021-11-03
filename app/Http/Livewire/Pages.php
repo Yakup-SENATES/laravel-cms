@@ -3,23 +3,25 @@
 namespace App\Http\Livewire;
 
 use App\Models\Page;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Str;
 
 class Pages extends Component
 {
     use WithPagination;
-    public $slug, $title, $content, $modelId;
-    public  $modelFormVisible = false;
-    public  $modelConfirmDeleteVisible = false;
-    public  $isSetToDefaultHomePage;
-    public  $isSetToDefaultNotFoundPage;
-
+    public $modelFormVisible = false;
+    public $modelConfirmDeleteVisible = false;
+    public $modelId;
+    public $slug;
+    public $title;
+    public $content;
+    public $isSetToDefaultHomePage;
+    public $isSetToDefaultNotFoundPage;
 
     /**
-     * The Validation rules
+     * The validation rules
      *
      * @return void
      */
@@ -28,13 +30,12 @@ class Pages extends Component
         return [
             'title' => 'required',
             'slug' => ['required', Rule::unique('pages', 'slug')->ignore($this->modelId)],
-            'content' => 'required'
+            'content' => 'required',
         ];
     }
 
     /**
-     * The Livewire mount function
-     * 
+     * The livewire mount function
      *
      * @return void
      */
@@ -45,8 +46,74 @@ class Pages extends Component
     }
 
     /**
-     * runs every time the 
-     * title variables updated.  
+     * The create function.
+     *
+     * @return void
+     */
+    public function create()
+    {
+        $this->validate();
+        $this->unassignDefaultHomePage();
+        $this->unassignDefaultNotFoundPage();
+        Page::create($this->modelData());
+        $this->modelFormVisible = false;
+        $this->reset();
+
+        $this->dispatchBrowserEvent('event-notification', [
+            'eventName' => 'New Page',
+            'eventMessage' => 'Another page has been created!',
+        ]);
+    }
+
+    /**
+     * The read function.
+     *
+     * @return void
+     */
+    public function read()
+    {
+        return Page::paginate(5);
+    }
+
+    /**
+     * The update function.
+     *
+     * @return void
+     */
+    public function update()
+    {
+        $this->validate();
+        $this->unassignDefaultHomePage();
+        $this->unassignDefaultNotFoundPage();
+        Page::find($this->modelId)->update($this->modelData());
+        $this->modelFormVisible = false;
+
+        $this->dispatchBrowserEvent('event-notification', [
+            'eventName' => 'Updated Page',
+            'eventMessage' => 'There is a page (' . $this->modelId . ') that has been updated!',
+        ]);
+    }
+
+    /**
+     * The delete function.
+     *
+     * @return void
+     */
+    public function delete()
+    {
+        Page::destroy($this->modelId);
+        $this->modelConfirmDeleteVisible = false;
+        $this->resetPage();
+
+        $this->dispatchBrowserEvent('event-notification', [
+            'eventName' => 'Deleted Page',
+            'eventMessage' => 'The page (' . $this->modelId . ') has been deleted!',
+        ]);
+    }
+
+    /**
+     * Runs everytime the title
+     * variable is updated.
      *
      * @param  mixed $value
      * @return void
@@ -56,153 +123,43 @@ class Pages extends Component
         $this->slug = Str::slug($value);
     }
 
+    /**
+     * Runs everytime the isSetToDefaultHomePage
+     * variable is updated.
+     *
+     * @return void
+     */
     public function updatedIsSetToDefaultHomePage()
     {
         $this->isSetToDefaultNotFoundPage = null;
     }
 
-
+    /**
+     * Runs everytime the isSetToDefaultNotFoundPage
+     * variable is updated.
+     *
+     * @return void
+     */
     public function updatedIsSetToDefaultNotFoundPage()
     {
         $this->isSetToDefaultHomePage = null;
     }
 
-
     /**
-     * create Page 
+     * Shows the form model
+     * of the create function.
      *
-     * @return void
-     */
-    public function create()
-    {
-        $this->validate();
-        $this->unAssignDefaultHomePage();
-        $this->unAssignDefaultNotFoundPage();
-        Page::create($this->modelData());
-        $this->modelFormVisible = false;
-        $this->reset();
-    }
-
-    /**
-     * The read function
-     *
-     * @return void
-     */
-    public function read()
-    {
-        return Page::paginate(5);
-    }
-
-
-    /**
-     * The update function
-     *
-     * @return void
-     */
-    public function update()
-    {
-        $this->validate();
-        $this->unAssignDefaultHomePage();
-        $this->unAssignDefaultNotFoundPage();
-
-        Page::find($this->modelId)->update($this->modelData());
-        $this->modelFormVisible = false;
-        //$this->resetValidation();
-    }
-
-    /**
-     * The page delete function 
-     *
-     * @return void
-     */
-    public function delete()
-    {
-        Page::destroy($this->modelId);
-        $this->modelConfirmDeleteVisible = false;
-        $this->resetPage();
-    }
-
-
-    ///**
-    // * Resets all variables 
-    // * to null
-    // *
-    // * @return void
-    // */
-    //public function resetVars()
-    //{
-    //    $this->modelId = null;
-    //    $this->title = null;
-    //    $this->slug = null;
-    //    $this->content = null;
-    //    $this->isSetToDefaultHomePage = null;
-    //    $this->isSetToDefaultNotFoundPage = null;
-    //}
-
-    ///**
-    // * Generates a url slug 
-    // * base on the title.
-    // *
-    // * @param  mixed $value
-    // * @return void
-    // */
-    //private function generateSlug($value)
-    //{
-    //    $process1 =  str_replace(' ', '-', $value);
-    //    $process2 = strtolower($process1);
-    //    $this->slug = $process2;
-    //}
-
-
-    /**
-     * Un Assigns the default homepage in the database table 
-     *
-     * @return void
-     */
-    private function unAssignDefaultHomePage()
-    {
-
-        if ($this->isSetToDefaultHomePage != null) {
-            Page::where('is_default_home', true)->update([
-                'is_default_home' => false,
-            ]);
-        }
-    }
-
-    /**
-     *  Un Assigns the default not found page  in the database table
-     *
-     * @return void
-     */
-    private function unAssignDefaultNotFoundPage()
-    {
-
-        if ($this->isSetToDefaultNotFoundPage != null) {
-            Page::where('is_default_not_found', true)->update([
-                'is_default_not_found' => false,
-            ]);
-        }
-    }
-
-
-    /**
-     * Show the form modal of the create function
-     * 
-     * ctr+shift+ı ile yapılıyor
-     * 
      * @return void
      */
     public function createShowModel()
     {
         $this->resetValidation();
-        //update den sonra veriler temizlenmeli
         $this->reset();
         $this->modelFormVisible = true;
     }
 
-
     /**
-     * Shows the form model 
+     * Shows the form model
      * in update mode.
      *
      * @param  mixed $id
@@ -212,31 +169,27 @@ class Pages extends Component
     {
         $this->resetValidation();
         $this->reset();
-        $this->modelId  = $id;
+        $this->modelId = $id;
         $this->modelFormVisible = true;
         $this->loadModel();
     }
 
     /**
-     * Shows the delete
-     * confirmation modal   
+     * Shows the delete confirmation model.
      *
      * @param  mixed $id
      * @return void
      */
     public function deleteShowModel($id)
     {
-
         $this->modelId = $id;
         $this->modelConfirmDeleteVisible = true;
     }
 
-
-
     /**
-     * Loads the model data 
-     *  of this component
-     * 
+     * Loads the model data
+     * of this component.
+     *
      * @return void
      */
     public function loadModel()
@@ -249,10 +202,8 @@ class Pages extends Component
         $this->isSetToDefaultNotFoundPage = !$data->is_default_not_found ? null : true;
     }
 
-
-
     /**
-     * The Data for the model mapped
+     * The data for the model mapped
      * in this component.
      *
      * @return void
@@ -268,11 +219,49 @@ class Pages extends Component
         ];
     }
 
-
-
+    /**
+     * Unassigns the default home page in the database table
+     *
+     * @return void
+     */
+    private function unassignDefaultHomePage()
+    {
+        if ($this->isSetToDefaultHomePage != null) {
+            Page::where('is_default_home', true)->update([
+                'is_default_home' => false,
+            ]);
+        }
+    }
 
     /**
-     * The live-wire render function
+     * Unassigns the default 404 page in the database table
+     *
+     * @return void
+     */
+    private function unassignDefaultNotFoundPage()
+    {
+        if ($this->isSetToDefaultNotFoundPage != null) {
+            Page::where('is_default_not_found', true)->update([
+                'is_default_not_found' => false,
+            ]);
+        }
+    }
+
+    /**
+     * Dispatch event
+     *
+     * @return void
+     */
+    public function dispatchEvent()
+    {
+        $this->dispatchBrowserEvent('event-notification', [
+            'eventName' => 'Sample Event',
+            'eventMessage' => 'You have a sample event notification!',
+        ]);
+    }
+
+    /**
+     * The livewire render function.
      *
      * @return void
      */

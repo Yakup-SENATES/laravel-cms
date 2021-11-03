@@ -1,11 +1,14 @@
 <div class="p-6" >
     {{-- If you look to others for fulfillment, you will never truly be fulfilled. --}}
       
-        <div class="flex items-center justify-end px-4 py-3 text-right sm:px-6">
-            <x-jet-button wire:click="createShowModel">
-                {{ __('Create') }}
-            </x-jet-button>
-        </div>
+    <div class="flex items-center justify-end px-4 py-3 text-right sm:px-6">
+        <x-jet-button style="margin-right: 15px" wire:click="dispatchEvent">
+            {{ __('Dispatch Event') }}
+        </x-jet-button>
+        <x-jet-button wire:click="createShowModal">
+            {{ __('Create') }}
+        </x-jet-button>
+    </div>
 
         {{--Data table--}}
 
